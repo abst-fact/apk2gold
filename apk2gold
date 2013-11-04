@@ -28,10 +28,14 @@ PATH_out_dir="$1"
 PATH_out_dir_tmp=$PATH_out_dir/.tmp
 
 if ! [ -f "${PATH_script_dir}/${TAGS}/tag.${TAG}" ]; then
+    echo "! It seems not to be prepared."
+    echo "! Starting preparation script..."
+    echo ""
     if ! "$PATH_script_dir/prepare.sh"
     then
 	die "error: prepare.sh stopped by error."
     fi
+    echo "Preparation successfully completed."
     echo ""
 fi
 
@@ -42,7 +46,7 @@ while [ $# -gt 0 ]; do
         echo "! temporary directory '$PATH_out_dir_tmp' already exists."
 	echo "! removed."
         rm -r "$PATH_out_dir_tmp" 
-    	echo ""
+        echo ""
     fi
 
     APK_filename="$1"

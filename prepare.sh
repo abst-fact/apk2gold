@@ -1,11 +1,12 @@
 #!/bin/sh
 . $(dirname $0)/apk2gold.conf
 
+cd $(dirname $0)
 
 JD_INTELLIJ_URL="https://bitbucket.org/bric3/jd-intellij"
 
-TAGS_BASE="$(dirname $0)/${TAGS}"
-TOOLS_BASE="$(dirname $0)/${TOOLS}"
+TAGS_BASE="./${TAGS}"
+TOOLS_BASE="./${TOOLS}"
 FRAMEWORK_RES_DEFAULT="${TOOLS_BASE}/Android-x86/framework-res.apk"
 
 mkdir -p "$TAGS_BASE"
@@ -32,7 +33,7 @@ if ! [ -e "$TAGS_BASE/tag.${TAG}" ]; then
     if [ $# -lt 1 ]; then
         echo "'framework-res.apk' not specified by arguments."
         echo "Do you want to use default apk? ('$FRAMEWORK_RES_DEFAULT')"
-        echo "[Y/n] :"
+        echo -n "[Y/n]: "
         if read i && [ "x$i" == "xn" ]; then
             echo "Please retry to prepare with the file path to 'framework-res.apk'"
             echo ""
