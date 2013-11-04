@@ -1,5 +1,11 @@
 #!/bin/sh
 
+function die(){
+    echo ""
+    exit 1
+}
+
+
 PATH_script_dir="`dirname $0`"
 
 . $PATH_script_dir/apk2gold.conf
@@ -14,34 +20,32 @@ CMD_jd_cli="java -jar ${PATH_tools_dir}/jd-cli/jd-core-java-1.0.jar"
 CMD_apktool="${PATH_tools_dir}/apktool/${HOST_OS}/apktool"
 
 if [ $# -lt 2 ]; then
-    echo "at least 2 arguments are required."
     echo "usage:"
     echo "  $0 <output-dir> <apk-file> [another apk-file [...] ]"
+    echo ""
     exit 1
 fi
 
 PATH_out_dir="$1"
 PATH_out_dir_tmp=$PATH_out_dir/.tmp
 
-if [ -e $PATH_out_dir_tmp ]; then
-    echo "error: temporary-dir $PATH_out_dir_tmp already exists."
-    exit 1
-fi
-
-if ! [ -e ${PARH_script_dir}/tag.${TAG} ]; then
+if ! [ -f "${PATH_script_dir}/${TAGS}/tag.${TAG}" ]; then
     if ! $PATH_script_dir/prepare.sh
     then
         echo "error: prepare.sh stopped by error."
         exit 1
     fi
+    echo ""
 fi
 
 shift
 
 while [ $# -gt 0 ]; do
     if [ -d "$PATH_out_dir_tmp" ]; then
-        echo "temporary directory '$PATH_out_dir_tmp' already exists. remove."
+        echo "! temporary directory '$PATH_out_dir_tmp' already exists."
+	echo "! removed."
         rm -r "$PATH_out_dir_tmp" 
+    	echo ""
     fi
 
     APK_filename="$1"
@@ -51,20 +55,34 @@ while [ $# -gt 0 ]; do
 
     mkdir -p $APK_src_dir
 
-    $CMD_apktool d -t "$TAG" -f "$APK_filename" "$PATH_out_dir_tmp"
+    echo "### $APK_filename"
+    echo "# .apk -> .smali, res"
+    ( $CMD_apktool d -t "$TAG" -f "$APK_filename" "$PATH_out_dir_tmp" 2>&1 ) || die
 
-    # prepare dex2jar
-    mv "$PATH_out_dir_tmp/smali" "$PATH_out_dir_tmp/.smali"
+    # mv "$PATH_out_dir_tmp/smali" "$PATH_out_dir_tmp/.smali" || die
 
-    $CMD_dex2jar "$APK_filename" -o "$APK_out_jar"
+    echo "# .apk -> .jar (.dex -> .class)"
+    $CMD_dex2jar "$APK_filename" -o "$APK_out_jar" 2>&1 || die
 
-    echo "Converting .class files to java..."
+    echo "# .class -> .java"
+    $CMD_jd_cli "$APK_out_jar" "$APK_src_dir" || die
 
-    $CMD_jd_cli "$APK_out_jar" "$APK_src_dir"
-    $CMD_rreassoc "$PATH_out_dir_tmp"
+    echo "# reassosiate resources."
+    $CMD_rreassoc "$PATH_out_dir_tmp" || die
 
+    echo "# remove .jar"
     rm "$APK_out_jar"
+
+    echo "# check move destination."
+    if [ -d "$PATH_out_dir/$APK_basename" ]; then
+	echo "'$PATH_out_dir/$APK_basename' already exists."
+	echo "renamed."
+	mv "$PATH_out_dir/$APK_basename" "$PATH_out_dir/${APK_basename}.moved.$(date +%s)"
+    fi
     mv "$PATH_out_dir_tmp" "$PATH_out_dir/$APK_basename"
+
+    echo "# done"
+    echo ""
 
     shift
 done

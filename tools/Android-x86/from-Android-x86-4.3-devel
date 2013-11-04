@@ -1,19 +1,13 @@
 
-framework.apk in this dir was retrieved from 
+framework-res.apk in this dir was retrieved from 
 http://android-x86.googlecode.com/files/android-x86-4.3-20130725.iso 
 
 $ md5sum *
 8a905507c511899b109a505d8e14f263  android-x86-4.3-20130725.iso
 2372133083104fc2c79c1f4c4ad8ff57  framework-res.apk
-aa6def67f3f30d07203b6888b110ad3d  framework.jar
-fb04e4472b5f5a921d043a842edafd19  framework.odex
-d41d8cd98f00b204e9800998ecf8427e  from-Android-x86-4.3-devel
 
 $ sha1sum *
 b2b4ba3da4b90e9a95bfa0a088bcaa8eb5ce0c30  android-x86-4.3-20130725.iso
 99688fdd53ab56c220e482923cea6aab94be115f  framework-res.apk
-d14631ca7518db7b24b748827e61879fd5bb9f3b  framework.jar
-09c1a62c5ef616ed11868215417d1d887fb37d5b  framework.odex
-da39a3ee5e6b4b0d3255bfef95601890afd80709  from-Android-x86-4.3-devel
 
 
