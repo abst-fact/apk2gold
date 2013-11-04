@@ -44,10 +44,10 @@ There are different ways to acquire an APK, but the easiest is to just download 
 
 ### Decompiling
 Actually using my tool easy as pie! Just use:  
-`apk2gold <target>.apk`
+`apk2gold output-dir <target>.apk [apks..]`
 
 ### Looking at the result
-This will create a folder with the APK's name without '.apk' suffix. Everything is in there. There is also an additional directory you may not recognize, `/.smali`, which contains the Smali output from APKTool. It's just kept around for reference, in case JD did something bad. Load it up in Eclipse and have fun!  
+This will create a folder with the APK's name without '.apk' suffix. Everything is in there. There is also an additional directory you may not recognize, `/smali`, which contains the Smali output from APKTool. It's just kept around for reference, in case JD did something bad. Load it up in Eclipse and have fun!  
 Note that the result will almost certainly not compile; that's not really the goal. We just want to get an idea of whats happening in the source code, check for malicious shit, etc.
 
 ## You know what would be cool?
