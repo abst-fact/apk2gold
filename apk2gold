@@ -1,11 +1,71 @@
 #!/bin/sh
-MPATH=`dirname $0`
-FOLDER=`echo $1 | sed -e 's/\.apk//g'`
-$MPATH/osx/apktool d -f $1
-mkdir $FOLDER/src
-mv $FOLDER/smali $FOLDER/.smali
-$MPATH/dex2jar-0.0.9.12/dex2jar.sh $1
-echo "Converting .class files to java..."
-java -jar $MPATH/jd-cli/jd-core-java-1.0.jar ${FOLDER}_dex2jar.jar $FOLDER/src
-rm -rf ${FOLDER}_dex2jar.jar
-python $MPATH/rreassoc.py ${FOLDER}
+
+PATH_script_dir="`dirname $0`"
+
+. $PATH_script_dir/apk2gold.conf
+
+PATH_tools_dir="$PATH_script_dir/$TOOLS"
+
+CMD_python2="python2"
+CMD_java="java"
+CMD_rreassoc="$CMD_python2 $PATH_script_dir/rreassoc.py"
+CMD_dex2jar="$PATH_tools_dir/dex2jar-0.0.9.12/d2j-dex2jar.sh"
+CMD_jd_cli="java -jar ${PATH_tools_dir}/jd-cli/jd-core-java-1.0.jar"
+CMD_apktool="${PATH_tools_dir}/apktool/${HOST_OS}/apktool"
+
+if [ $# -lt 2 ]; then
+    echo "at least 2 arguments are required."
+    echo "usage:"
+    echo "  $0 <output-dir> <apk-file> [another apk-file [...] ]"
+    exit 1
+fi
+
+PATH_out_dir="$1"
+PATH_out_dir_tmp=$PATH_out_dir/.tmp
+
+if [ -e $PATH_out_dir_tmp ]; then
+    echo "error: temporary-dir $PATH_out_dir_tmp already exists."
+    exit 1
+fi
+
+if ! [ -e ${PARH_script_dir}/tag.${TAG} ]; then
+    if ! $PATH_script_dir/prepare.sh
+    then
+        echo "error: prepare.sh stopped by error."
+        exit 1
+    fi
+fi
+
+shift
+
+while [ $# -gt 0 ]; do
+    if [ -d "$PATH_out_dir_tmp" ]; then
+        echo "temporary directory '$PATH_out_dir_tmp' already exists. remove."
+        rm -r "$PATH_out_dir_tmp" 
+    fi
+
+    APK_filename="$1"
+    APK_basename="`basename $APK_filename .apk`"
+    APK_out_jar=$PATH_out_dir/${APK_basename}.d.jar
+    APK_src_dir=$PATH_out_dir_tmp/src
+
+    mkdir -p $APK_src_dir
+
+    $CMD_apktool d -t "$TAG" -f "$APK_filename" "$PATH_out_dir_tmp"
+
+    # prepare dex2jar
+    mv "$PATH_out_dir_tmp/smali" "$PATH_out_dir_tmp/.smali"
+
+    $CMD_dex2jar "$APK_filename" -o "$APK_out_jar"
+
+    echo "Converting .class files to java..."
+
+    $CMD_jd_cli "$APK_out_jar" "$APK_src_dir"
+    $CMD_rreassoc "$PATH_out_dir_tmp"
+
+    rm "$APK_out_jar"
+    mv "$PATH_out_dir_tmp" "$PATH_out_dir/$APK_basename"
+
+    shift
+done
+

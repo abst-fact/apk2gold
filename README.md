@@ -32,10 +32,10 @@ apk2gold is basically a small amount of original content (the R.* thing) and a s
 
 ### Dependencies
 
-You'll need python, git (for submodules), and mercurial (hg) for the sub-builds. Sorry!
+You'll need python2, git (for submodules), and mercurial (hg) for the sub-builds. Sorry!
 
 ### Installing
-Just run make.sh
+Just run prepare.sh
 
 ## Usage
 
