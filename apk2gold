@@ -1,14 +1,8 @@
 #!/bin/sh
 
-function die(){
-    echo ""
-    exit 1
-}
-
-
 PATH_script_dir="`dirname $0`"
 
-. $PATH_script_dir/apk2gold.conf
+. "$PATH_script_dir/apk2gold.conf"
 
 PATH_tools_dir="$PATH_script_dir/$TOOLS"
 
@@ -19,21 +13,24 @@ CMD_dex2jar="$PATH_tools_dir/dex2jar-0.0.9.12/d2j-dex2jar.sh"
 CMD_jd_cli="java -jar ${PATH_tools_dir}/jd-cli/jd-core-java-1.0.jar"
 CMD_apktool="${PATH_tools_dir}/apktool/${HOST_OS}/apktool"
 
+function die(){
+    echo "$1"
+    exit 1
+}
+
 if [ $# -lt 2 ]; then
     echo "usage:"
     echo "  $0 <output-dir> <apk-file> [another apk-file [...] ]"
-    echo ""
-    exit 1
+    die
 fi
 
 PATH_out_dir="$1"
 PATH_out_dir_tmp=$PATH_out_dir/.tmp
 
 if ! [ -f "${PATH_script_dir}/${TAGS}/tag.${TAG}" ]; then
-    if ! $PATH_script_dir/prepare.sh
+    if ! "$PATH_script_dir/prepare.sh"
     then
-        echo "error: prepare.sh stopped by error."
-        exit 1
+	die "error: prepare.sh stopped by error."
     fi
     echo ""
 fi
@@ -50,19 +47,17 @@ while [ $# -gt 0 ]; do
 
     APK_filename="$1"
     APK_basename="`basename $APK_filename .apk`"
-    APK_out_jar=$PATH_out_dir/${APK_basename}.d.jar
-    APK_src_dir=$PATH_out_dir_tmp/src
+    APK_out_jar="$PATH_out_dir/${APK_basename}.d.jar"
+    APK_src_dir="$PATH_out_dir_tmp/src"
 
-    mkdir -p $APK_src_dir
+    mkdir -p "$APK_src_dir"
 
     echo "### $APK_filename"
     echo "# .apk -> .smali, res"
     ( $CMD_apktool d -t "$TAG" -f "$APK_filename" "$PATH_out_dir_tmp" 2>&1 ) || die
 
-    # mv "$PATH_out_dir_tmp/smali" "$PATH_out_dir_tmp/.smali" || die
-
     echo "# .apk -> .jar (.dex -> .class)"
-    $CMD_dex2jar "$APK_filename" -o "$APK_out_jar" 2>&1 || die
+    $CMD_dex2jar "$APK_filename" -o "$APK_out_jar" || die
 
     echo "# .class -> .java"
     $CMD_jd_cli "$APK_out_jar" "$APK_src_dir" || die
